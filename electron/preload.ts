@@ -1,25 +1,18 @@
-'use strict';
-
-const { contextBridge, ipcRenderer } = require('electron');
+import { contextBridge, ipcRenderer } from 'electron';
 
 /**
- * @typedef {Object} IpcApi
- * @property {() => Promise<any[]>} getAllEntries
- * @property {(id: string) => Promise<any>} getEntry
- * @property {(entry: any) => Promise<any>} createEntry
- * @property {(id: string, entry: any) => Promise<any>} updateEntry
- * @property {(id: string) => Promise<void>} deleteEntry
+ * API for communicating with the main process.
+ * Exposes a set of functions for diary entry operations.
  */
-
-/** @type {IpcApi} */
 const api = {
   getAllEntries: () => ipcRenderer.invoke('getAllEntries'),
-  getEntry: (id) => ipcRenderer.invoke('getEntry', id),
-  createEntry: (entry) => ipcRenderer.invoke('createEntry', entry),
-  updateEntry: (id, entry) => ipcRenderer.invoke('updateEntry', id, entry),
-  deleteEntry: (id) => ipcRenderer.invoke('deleteEntry', id)
+  getEntry: (id: string) => ipcRenderer.invoke('getEntry', id),
+  createEntry: (entry: { title: string; content: string; createdAt: string }) => 
+    ipcRenderer.invoke('createEntry', entry),
+  updateEntry: (id: string, entry: { title?: string; content?: string }) => 
+    ipcRenderer.invoke('updateEntry', id, entry),
+  deleteEntry: (id: string) => ipcRenderer.invoke('deleteEntry', id)
 };
 
-// Expose protected methods that allow the renderer process to use
-// the ipcRenderer without exposing the entire object
-contextBridge.exposeInMainWorld('api', api); 
+// Expose the API to the renderer process
+contextBridge.exposeInMainWorld('api', api);

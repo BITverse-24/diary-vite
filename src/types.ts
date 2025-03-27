@@ -7,6 +7,7 @@ export interface DiaryEntry {
 
 export interface AuthContextType {
 	isAuthenticated: boolean;
+	isInitialized: boolean;
 	login: (password: string) => void;
 	logout: () => void;
 }

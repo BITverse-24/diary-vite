@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
 	const [password, setPassword] = useState('');
-	const { login } = useAuth();
+	const { login, isInitialized } = useAuth();
 	const navigate = useNavigate();
 
 	const handleSubmit = (e: React.FormEvent) => {
@@ -19,20 +19,27 @@ const LoginPage = () => {
 			<div className="bg-[#2A2A2A] p-6 rounded-lg w-full max-w-md">
 				<form onSubmit={handleSubmit} className="space-y-4">
 					<div>
-						<label className="block text-sm mb-2">Secret Key</label>
+						<label className="block text-sm mb-2">
+							{isInitialized ? "Secret Key" : "Set Your Secret Key"}
+						</label>
 						<input
 							type="password"
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}
 							className="w-full p-2 bg-[#1E1E1E] border border-[#FFD700] rounded focus:outline-none focus:ring-2 focus:ring-[#FFD700]"
-							placeholder="Enter your secret key"
+							placeholder={isInitialized ? "Enter your secret key" : "Create a secret key"}
 						/>
 					</div>
+					{!isInitialized && (
+						<p className="text-sm text-amber-400">
+							First time? Create a secret key to protect your diary.
+						</p>
+					)}
 					<button
 						type="submit"
 						className="w-full bg-[#FFD700] text-[#1E1E1E] py-2 rounded hover:bg-[#FFE55C] transition-colors"
 					>
-						Enter
+						{isInitialized ? "Enter" : "Create Diary"}
 					</button>
 				</form>
 			</div>

@@ -1,53 +1,57 @@
-import { app, BrowserWindow, ipcMain } from "electron";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+"use strict";
+const electron = require("electron");
+const path = require("path");
+const crypto = require("crypto");
+const url = require("url");
+var _documentCurrentScript = typeof document !== "undefined" ? document.currentScript : null;
+const __filename$1 = url.fileURLToPath(typeof document === "undefined" ? require("url").pathToFileURL(__filename).href : _documentCurrentScript && _documentCurrentScript.tagName.toUpperCase() === "SCRIPT" && _documentCurrentScript.src || new URL("main.js", document.baseURI).href);
+const __dirname$1 = path.dirname(__filename$1);
+const entries = [];
 let mainWindow = null;
-async function createWindow() {
-  mainWindow = new BrowserWindow({
+function createWindow() {
+  mainWindow = new electron.BrowserWindow({
     width: 1200,
     height: 800,
     webPreferences: {
+      preload: path.join(__dirname$1, "../dist-electron/preload.js"),
       nodeIntegration: false,
-      contextIsolation: true,
-      sandbox: false,
-      preload: join(__dirname, "preload.cjs")
+      contextIsolation: true
     }
   });
-  if (process.env.NODE_ENV === "development") {
-    await mainWindow.loadURL("http://localhost:5173");
-    mainWindow.webContents.openDevTools();
-  } else {
-    await mainWindow.loadFile(join(__dirname, "../dist/index.html"));
-  }
   mainWindow.webContents.on("did-fail-load", (event, errorCode, errorDescription) => {
     console.error("Failed to load:", errorDescription);
   });
+  if (electron.app.isPackaged) {
+    mainWindow.loadFile(path.join(__dirname$1, "../dist/index.html"));
+  } else {
+    mainWindow.loadURL("http://localhost:5173");
+    mainWindow.webContents.openDevTools();
+  }
 }
-app.whenReady().then(createWindow);
-app.on("window-all-closed", () => {
+electron.app.whenReady().then(() => {
+  createWindow();
+  electron.app.on("activate", () => {
+    if (electron.BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
+electron.app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
-    app.quit();
+    electron.app.quit();
   }
 });
-app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
-});
-let entries = [];
-ipcMain.handle("getAllEntries", () => {
+electron.ipcMain.handle("getAllEntries", () => {
   return entries;
 });
-ipcMain.handle("getEntry", (_, id) => {
+electron.ipcMain.handle("getEntry", (_, id) => {
   const entry = entries.find((e) => e.id === id);
   if (!entry) {
     throw new Error("Entry not found");
   }
   return entry;
 });
-ipcMain.handle("createEntry", (_, entry) => {
+electron.ipcMain.handle("createEntry", (_, entry) => {
   const newEntry = {
     ...entry,
     id: crypto.randomUUID()
@@ -55,7 +59,7 @@ ipcMain.handle("createEntry", (_, entry) => {
   entries.push(newEntry);
   return newEntry;
 });
-ipcMain.handle("updateEntry", (_, id, updatedEntry) => {
+electron.ipcMain.handle("updateEntry", (_, id, updatedEntry) => {
   const index = entries.findIndex((e) => e.id === id);
   if (index === -1) {
     throw new Error("Entry not found");
@@ -63,7 +67,7 @@ ipcMain.handle("updateEntry", (_, id, updatedEntry) => {
   entries[index] = { ...entries[index], ...updatedEntry };
   return entries[index];
 });
-ipcMain.handle("deleteEntry", (_, id) => {
+electron.ipcMain.handle("deleteEntry", (_, id) => {
   const index = entries.findIndex((e) => e.id === id);
   if (index === -1) {
     throw new Error("Entry not found");
