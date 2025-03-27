@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.prose-gold {
+	--tw-prose-invert-headings: #ffd700;
+	--tw-prose-invert-links: #ffd700;
+	--tw-prose-invert-bold: #ffd700;
+	--tw-prose-invert-counters: #ffd700;
+	--tw-prose-invert-bullets: #ffd700;
+}
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: #ffd700 #2a2a2a;
+}
+
+*::-webkit-scrollbar {
+	width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+	background: #2a2a2a;
+}
+
+*::-webkit-scrollbar-thumb {
+	background-color: #ffd700;
+	border-radius: 4px;
+}
